@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 import requests
 
 class NBAInfo(metaclass=ABCMeta):
-    
+
+
     @abstractmethod
     def get_players(self):
         pass
@@ -38,12 +39,15 @@ class NBAInfoMock(NBAInfo):
 
 class NBAInfoApi(NBAInfo):
 
+    URL = 'https://www.balldontlie.io/api/'
+    API_VERSION = 'v1'
+    
     def get_players(self):
-        r = requests.get('https://www.balldontlie.io/api/v1/players')
+        r = requests.get(f"{self.URL}{self.API_VERSION}/players")
         return r.json()['data']
     
     def get_teams(self, conference: str):
-        r = requests.get('https://www.balldontlie.io/api/v1/teams')
+        r = requests.get(f"{self.URL}{self.API_VERSION}/teams")
         conference = conference.capitalize()
         teams = []
         for team in r.json()['data']:

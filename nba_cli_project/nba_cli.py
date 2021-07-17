@@ -15,7 +15,7 @@ app = typer.Typer()
 
 @app.command()
 def players():
-    print (f"nbacli version {VERSION}")
+    print (f"\nnbacli version {VERSION}\n")
     nba_info = get_nba_info()
     players = nba_info.get_players()
     print(f"These are the first {len(players)} players on the Roster")
@@ -32,6 +32,10 @@ def teams(conference: Conference = typer.Option(Conference.ALL)):
     for team in teams:
         print(f"{team['full_name']}")
 
+# si escribo "nba_cli players" me muestra los 25 primeros jugadores
+# si escribo "nba_cli players -n 50" me muestra los 50 primeros
+# si escribo "nba_cli players --all" me muestra todos
+# si escribo "nba_cli players --team Lakers" me muestra los jugadores de los lakers
 
 
 @app.command()
