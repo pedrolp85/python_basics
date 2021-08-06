@@ -3,3 +3,4 @@
 set -ex
 
 isort .
+black .
