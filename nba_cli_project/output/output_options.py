@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from tabulate import tabulate
+
 
 class PrintOutput(metaclass = ABCMeta):
 

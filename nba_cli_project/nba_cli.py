@@ -3,7 +3,7 @@ from enum import Enum
 import requests
 import typer
 
-from nba.constants import VERSION, PlayerOrder, Conference
+from nba.constants import VERSION, Conference, PlayerOrder
 from nba.nba_info import get_nba_info
 from output.output_options import output_options
 

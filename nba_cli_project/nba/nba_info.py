@@ -1,9 +1,10 @@
-from abc import ABCMeta, abstractmethod
-import requests
-from typing import List, Dict, Any, Optional
 import sys
-from nba.constants import VERSION, PlayerOrder, Conference
+from abc import ABCMeta, abstractmethod
+from typing import Any, Dict, List, Optional
 
+import requests
+
+from nba.constants import VERSION, Conference, PlayerOrder
 
 # Un concepto importante en programación orientada a objetos es el de las clases abstractas. 
 # Unas clases en las que se pueden definir tanto métodos como propiedades,
