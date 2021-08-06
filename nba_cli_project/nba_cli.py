@@ -1,6 +1,3 @@
-from enum import Enum
-
-import requests
 import typer
 
 from nba.constants import VERSION, Conference, PlayerOrder
@@ -20,7 +17,8 @@ app = typer.Typer()
 # Ejercicios: Pasar las funciones de print output y orderby a otra interfaz
 # hacer Filterby con list_comprehension y filter()
 # implementar matches igual que players
-# hacer que get_players tenga un parametro team opcional, que nos obtiene todos los de un equipo
+# hacer que get_players tenga un parametro
+# team opcional, que nos obtiene todos los de un equipo
 
 
 @app.command()
@@ -55,7 +53,7 @@ def players(
 
 @app.command()
 def teams(conference: Conference = typer.Option(Conference.ALL)):
-    
+
     print(f"nbacli version {VERSION}")
 
     nba_info = get_nba_info()

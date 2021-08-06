@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from tabulate import tabulate
 
@@ -71,55 +71,6 @@ class YAMLFileOutput(FileOutput):
 
 class CSVFileOutput(FileOutput):
     pass
-
-
-class PrintOutputApi(PrintOutput):
-    def print_players_output_stream(
-        self, players: List[Dict[str, Any]], output: str
-    ) -> None:
-
-        if output == "stdout":
-
-            print(f"These are the first {len(players)} players on the Roster")
-            for player in players:
-                print(
-                    f"{player['first_name']} {player['last_name']}({player['id']}) plays for the {player['team']['full_name']}({player['team']['id']})"
-                )
-        else:
-
-            path = f"tmp/{output}"
-            f = open(path, "w+")
-            f.write(f"These are the first {len(players)} players on the Roster\n")
-            for player in players:
-                f.write(
-                    f"{player['first_name']} {player['last_name']} ({player['id']}) plays for the {player['team']['full_name']} ({player['team']['id']})\n"
-                )
-
-            f.close()
-
-    def print_matches_output_stream(
-        self, matches: List[Dict[str, Any]], output: str
-    ) -> None:
-
-        if output == "stdout":
-
-            print(f"These are the First {len(matches)} Games on the Api Server")
-            for match in matches:
-                print(
-                    f"{match['home_team']['name']} {match['home_team_score']} - {match['visitor_team_score']} {match['visitor_team']['name']}"
-                )
-
-        else:
-
-            path = f"tmp/{output}"
-            f = open(path, "w+")
-            f.write(f"These are the first {len(matches)} players on the Roster\n")
-            for match in matches:
-                f.write(
-                    f"{match['home_team']['name']} {match['home_team_score']} - {match['visitor_team_score']} {match['visitor']['name']}\n"
-                )
-
-            f.close()
 
 
 _outputs = {

@@ -4,11 +4,13 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from nba.constants import VERSION, Conference, PlayerOrder
+from nba.constants import Conference, PlayerOrder
 
-# Un concepto importante en programación orientada a objetos es el de las clases abstractas.
+# Un concepto importante en programación orientada
+# a objetos es el de las clases abstractas.
 # Unas clases en las que se pueden definir tanto métodos como propiedades,
-# pero que no pueden ser instancias directamente.Solamente se pueden usar para construir subclases.
+# pero que no pueden ser instancias directamente.
+# Solamente se pueden usar para construir subclases.
 # Permitiendo así tener una única implementación de los métodos compartidos,
 # evitando la duplicación de código.
 
@@ -18,11 +20,13 @@ from nba.constants import VERSION, Conference, PlayerOrder
 #      y evitando así la duplicación de código.
 
 #  2 - No es necesario que implemente todos los métodos
-#      Los métodos declarados pueden ser abstractos, pero es necesario que sean implementados
+#      Los métodos declarados pueden ser abstractos,
+#      pero es necesario que sean implementados
 #      en las subclases
 
 #  Para poder crear clases abstractas en Python es necesario importar
-#  la clase ABCMeta y el decorador abstractmethod del modulo abc (Abstract Base Classes).
+#  la clase ABCMeta y el decorador abstractmethod
+#  del modulo abc (Abstract Base Classes).
 
 # El ultimo método se llama inyección de dependencias, pendiente de repasarlo
 
@@ -77,14 +81,18 @@ class NBAInfoApi(NBAInfo):
         PlayerOrder.PLAYER_NAME: lambda x: x["last_name"],
     }
 
-    # Este método lo van a usar los métodos get_players y get_matches internamente, no tiene sentido que lo use un cliente de la librería
-    # con _nombre indicamos que es un método protegido, que no se toque desde una instancia externa
-    # con __nombre indicamos que es private, la diferencia es que las subclases no podrían acceder a él
+    # Este método lo van a usar los métodos get_players
+    # y get_matches internamente, no tiene sentido que
+    # lo use un cliente de la librería
+    # con _nombre indicamos que es un método protegido,
+    # que no se toque desde una instancia externa
+    # con __nombre indicamos que es private, la diferencia
+    # es que las subclases no podrían acceder a él
 
     def _fetch_from_api(
         self, uri_path: str, num_data_fetch: int, max_data_fetch: int
     ) -> List[Dict[str, Any]]:
-        
+
         data_fetched = []
         current_page = 1
         while num_data_fetch > 0 and current_page is not None:
@@ -92,7 +100,8 @@ class NBAInfoApi(NBAInfo):
                 max_data_fetch if num_data_fetch > max_data_fetch else num_data_fetch
             )
             r = requests.get(
-                f"{self.URL}{self.API_VERSION}/{uri_path}?per_page={max_data_fetch}&page={current_page}"
+                f"{self.URL}{self.API_VERSION}/{uri_path}?"
+                f"per_page={max_data_fetch}&page={current_page}"
             )
             new_data_fetched = r.json()["data"][:data_to_request]
             data_fetched.extend(new_data_fetched)
@@ -130,7 +139,7 @@ class NBAInfoApi(NBAInfo):
         return players
 
     def get_teams(self, conference: Conference):
-        
+
         r = requests.get(f"{self.URL}{self.API_VERSION}/teams")
         conference = conference.capitalize()
         teams = []
