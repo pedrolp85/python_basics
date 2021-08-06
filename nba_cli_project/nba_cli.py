@@ -1,21 +1,20 @@
-import typer
-import requests
-from nba.constants import VERSION
-from nba.nba_info import get_nba_info
-from print_output.output_options import output_options
 from enum import Enum
 
-class Conference(str, Enum):
-    EAST = 'east'
-    WEST = 'west'
-    ALL = 'all'
+import requests
+import typer
 
-class Order_param(str, Enum):
-    TEAM_ID = 'team_id'
-    PLAYER_ID = 'player_id'
-    TEAM_NAME = 'team_name'
-    PLAYER_NAME = 'player_name'
-    NONE = 'no_order'
+from nba.constants import VERSION, PlayerOrder, Conference
+from nba.nba_info import get_nba_info
+from output.output_options import output_options
+
+# Estándar para imports: (separados por linea en blanco)
+# Libreria estándar arriba
+
+# librarias no estándar en medio
+
+# imports de código abajo
+
+
 
 app = typer.Typer()
 
@@ -25,51 +24,52 @@ app = typer.Typer()
 # hacer que get_players tenga un parametro team opcional, que nos obtiene todos los de un equipo
 
 @app.command()
-def players(n: int = typer.Option(25), team: str = typer.Option(None), all: bool = typer.Option(False), output: str = typer.Option('stdout'), order_by: Order_param = typer.Option(Order_param.NONE)):
+def players(n: int = typer.Option(25), team: str = typer.Option(None), all: bool = typer.Option(False), output: str = typer.Option('stdout'), order_by: PlayerOrder = typer.Option(PlayerOrder.NONE)):
+    
     print (f"\nbacli version {VERSION}\n")
     nba_info = get_nba_info()
     nba_output = output_options()
+          
     num_players = (
-            -1 if all or team is not None 
-            else n
+        -1 if all 
+        else n
         )
     
-    if team is not None:
-        
-        if order_by != 'no_order':
-            players = nba_info.get_players_2(num_players, team, order_by)
-        else: 
-            players = nba_info.get_players_2(num_players, team)
-    else:
-        players = nba_info.get_players_2(num_players)
-    
-    
-   
-    
-    #nba_output.output_data_modifiers(players, order_by)
-    #(self, players: List[Dict[str, Any]] , order_by: str, filter_by: str, num_players: int) 
-    nba_output.print_output_stream(players, output)
+    players = nba_info.get_players(num_players, team, order_by) 
+    #nba_output.print_players_output_stream(players, output)
+    nba_output.send(players, [["last_name"], ["first_name"], ["team", "full_name"], ["team","id"]])
+# si escribo "nba_cli players" me muestra los 25 primeros jugadores
+# si escribo "nba_cli players --n 50" me muestra los 50 primeros
+# si escribo "nba_cli players --all" me muestra todos
+# si escribo "nba_cli players --team Lakers" me muestra los jugadores de los lakers
+# Otros parámetros: --output [fichero .txt|stdout]
+#                   --order-by [team_id|player_id|team_name|player_name|no_order] 
 
 @app.command()       
 def teams(conference: Conference = typer.Option(Conference.ALL)):
     print (f"nbacli version {VERSION}")
     
     nba_info = get_nba_info()
-    nba_output = output_options ()
+    nba_output = output_options()
     teams = nba_info.get_teams(conference.value)
+        
     print(f"Thes are the first {len(teams)} teams on the League")
-    for team in teams:
-        print(f"{team['full_name']}")
-
-# si escribo "nba_cli players" me muestra los 25 primeros jugadores
-# si escribo "nba_cli players --n 50" me muestra los 50 primeros
-# si escribo "nba_cli players --all" me muestra todos
-# si escribo "nba_cli players --team Lakers" me muestra los jugadores de los lakers
-
+    nba_output.send(teams, [["full_name"]])
 
 @app.command()
-def match():
-    print("")
+def matches(n: int = typer.Option(25), team: str = typer.Option(None), all: bool = typer.Option(False), output: str = typer.Option('stdout')):
+    print (f"nbacli version {VERSION}")
+    
+    nba_info = get_nba_info()
+    nba_output = output_options ()
+
+    num_matches = (
+      -1 if all 
+       else n
+      )
+    
+    players = nba_info.get_match(num_matches, team) 
+    nba_output.print_matches_output_stream(players, output)
 
 
 if __name__ == "__main__":

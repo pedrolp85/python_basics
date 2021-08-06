@@ -2,6 +2,8 @@ from abc import ABCMeta, abstractmethod
 import requests
 from typing import List, Dict, Any, Optional
 import sys
+from nba.constants import VERSION, PlayerOrder, Conference
+
 
 # Un concepto importante en programación orientada a objetos es el de las clases abstractas. 
 # Unas clases en las que se pueden definir tanto métodos como propiedades,
@@ -27,15 +29,15 @@ class NBAInfo(metaclass=ABCMeta):
 
     @abstractmethod
     def get_players(self):
-        print('hola NBAInfo')
-    
-    @abstractmethod
-    def get_teams(self,conference: str):
         pass
     
-    # @abstractmethod
-    # def get_match(self, num_matchs: int, team: Optional[str]):
-    #     pass
+    @abstractmethod
+    def get_teams(self, conference: Conference):
+        pass
+    
+    @abstractmethod
+    def get_match(self):
+        pass
 
 
 class NBAInfoMock(NBAInfo):
@@ -70,96 +72,52 @@ class NBAInfoApi(NBAInfo):
     TEAMS_PPAGE = 30
     MAX_PLAYERS_API_FETCH = 100
     MAX_PLAYERS_AVAILABLES = sys.maxsize * 2 + 1
+    MAX_MATCHES_AVAILABLES = sys.maxsize * 2 + 1
+    MAX_MATCHES_API_FETCH = 100
+
+    ORDER_BY_PLAYERS = {
+        PlayerOrder.TEAM_ID: lambda x: x['team']['id'],
+        PlayerOrder.PLAYER_ID: lambda x: x['id'],
+        PlayerOrder.TEAM_NAME: lambda x: x['team']['full_name'],
+        PlayerOrder.PLAYER_NAME: lambda x: x['last_name']
+    }
+
     
-    def get_players(self,num_players: int):
-        
-        if num_players > 0:
-
-            last_page_players = num_players % self.PLAYERS_PPAGE
-            pages = (
-                num_players // self.PLAYERS_PPAGE
-                if last_page_players == 0 
-                else (num_players // self.PLAYERS_PPAGE)+1
-            )
-        else: 
-            # cogemos todos los jugadores, el número aún no lo sabemos sin hacer
-            # la primera consulta a la API
-            
-            last_page_players = self.PLAYERS_PPAGE
-            pages = 1
-
-        players = []
-        num_page = 1       
-        while (num_page < pages+1):
-            print(f"Obteniendo datos...pagina {num_page}")
-            retrieve_elements = (
-                        last_page_players
-                        if (last_page_players !=0 and num_page == pages)
-                        else self.PLAYERS_PPAGE
-                    )            
-            
-            try:
-                r = requests.get(f"{self.URL}{self.API_VERSION}/players?per_page={self.PLAYERS_PPAGE}&page={num_page}")
-                r.raise_for_status()
-                
-            except requests.exceptions.RequestException as e:
-                raise SystemExit(e)
-                        
-            current_page = r.json()['meta']['current_page']
-            next_page = r.json()['meta']['next_page']
-            total_players = r.json()['meta']['total_count']
-            total_pages = r.json()['meta']['total_pages']
-            
-            if num_players < 0:
-                # La primera vez que entramos aquí num_players es < 0 si --all
-                # la segunda iteración no entraremos en ningún caso
-                
-                num_players = total_players
-                last_page_players = num_players % self.PLAYERS_PPAGE
-                pages = (
-                    num_players // self.PLAYERS_PPAGE
-                    if last_page_players == 0 
-                    else (num_players // self.PLAYERS_PPAGE)+1
-                )
-                
-            players = players + (r.json()['data'][:retrieve_elements])
-            
-            if current_page == total_pages:
-                print("Hemos obtenido todos los datos, paramos las consultas")
-                break
-
-            num_page += 1
-
-        return players
+    # Este método lo van a usar los métodos get_players y get_matches internamente, no tiene sentido que lo use un cliente de la librería
+    # con _nombre indicamos que es un método protegido, que no se toque desde una instancia externa
+    # con __nombre indicamos que es private, la diferencia es que las subclases no podrían acceder a él
     
-    def get_players_2(self, num_players: int, team: Optional[str] = None, order_by: Optional[str]) -> List[Dict[str, Any]]:
-        players = []
-        remainder_players = num_players if num_players > 0 else self.MAX_PLAYERS_AVAILABLES
+    def _fetch_from_api(self, uri_path: str, num_data_fetch: int, max_data_fetch: int) -> List[Dict[str, Any]]:
+        data_fetched = []
         current_page = 1
-        while remainder_players > 0 and current_page is not None:
-            players_to_request = self.MAX_PLAYERS_API_FETCH if remainder_players > self.MAX_PLAYERS_API_FETCH else remainder_players
-            print(f"Leyendo pagina {current_page}, voy a pedir {players_to_request}")
-            r = requests.get(f"{self.URL}{self.API_VERSION}/players?per_page={self.MAX_PLAYERS_API_FETCH}&page={current_page}")
-            new_players = r.json()['data'][:players_to_request]
-            players.extend(new_players)
-            print(f"He añadido a mi lista {len(new_players)} nuevos jugadores!")
+        while num_data_fetch > 0 and current_page is not None:
+            data_to_request = max_data_fetch if num_data_fetch > max_data_fetch else num_data_fetch
+            r = requests.get(f"{self.URL}{self.API_VERSION}/{uri_path}?per_page={max_data_fetch}&page={current_page}")
+            new_data_fetched = r.json()['data'][:data_to_request]
+            data_fetched.extend(new_data_fetched)
             current_page = r.json()['meta']['next_page']
-            remainder_players -= players_to_request
+            num_data_fetch -= data_to_request
+        
+        return data_fetched
 
+    def get_players(self, num_players: int, team: Optional[str] = None, order_by: Optional[PlayerOrder] = None) -> List[Dict[str, Any]]:
+        
+        players = []
+               
+        num_fetch_players = num_players if (num_players > 0 and team is None) else self.MAX_PLAYERS_AVAILABLES
+        players = self._fetch_from_api("players", num_fetch_players, self.MAX_PLAYERS_API_FETCH)
+        if team is not None:
+            players = [player for player in players if player['team']['name'] == team]
+
+        if order_by != PlayerOrder.NONE:
+            players = sorted(players, key=self.ORDER_BY_PLAYERS[order_by])
+
+        if num_players < len(players) and team is not None:
+            players = players[:num_players]
+            
         return players
     
-    def filter_players_byteam(self, players_raw: List[dict], team: str) -> List[dict]:
-        # hazme esto mismo con comprension list
-        # hazme este mismo llamando a la funcion filter() https://www.programiz.com/python-programming/methods/built-in/filter
-        players = []
-        for player in players_raw:
-            if player['team']['name'] == team:
-                players.append(player)
-                
-        return players
-
-
-    def get_teams(self, conference: str):
+    def get_teams(self, conference: Conference):
             r = requests.get(f"{self.URL}{self.API_VERSION}/teams")
             conference = conference.capitalize()
             teams = []
@@ -168,6 +126,16 @@ class NBAInfoApi(NBAInfo):
                     teams.append(team)
             return teams
 
+    def get_match(self, num_matches: int, team: Optional[str] = None) -> List[Dict[str, Any]]:
+        
+        matches = []
+               
+        num_matches_fetch = num_matches if (num_matches > 0 and team is None) else self.MAX_MATCHES_AVAILABLES
+        matches = self._fetch_from_api("games", num_matches_fetch, self.MAX_MATCHES_API_FETCH)
+        if team is not None:
+            matches = [match for match in matches if (match['home_team']['name'] == team or match['visitor_team']['name'] == team)]
+        
+        return matches
 
 class NBAInfoDataBase(NBAInfo):
 

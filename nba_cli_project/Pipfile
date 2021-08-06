@@ -2,12 +2,22 @@
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
+# fuentes de las librerías (públicas o privadas)
 
 [packages]
 requests = "==2.25"
 typer = "==0.3.2"
+tabulate = "==0.8.9"
+# dependencias para la máquina que ejecuta la aplicación
 
 [dev-packages]
-
+isort = "*"
+# dependencias máquina de desarrollo (linters etc)
 [requires]
 python_version = "3.7"
+
+
+#funcionanamiento: añadimos un paquete al pipfile
+# pipenv lock
+# pipenv install (--dev para incluir dependencias de Develop) 
+# pipfile shell para arrancar el entorno virtual
