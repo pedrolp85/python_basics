@@ -41,7 +41,7 @@ class NBAInfo(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_match(self):
+    def get_match(self, num_matches: int, team: Optional[str] = None):
         pass
 
 

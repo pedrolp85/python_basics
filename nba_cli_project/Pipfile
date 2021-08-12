@@ -15,6 +15,9 @@ isort = "*"
 black = "==21.5b1"
 flake8 = "*"
 autoflake = "*"
+vulture = "*"
+mypy = "*"
+pydantic = "*"
 
 [requires]
 python_version = "3.7"

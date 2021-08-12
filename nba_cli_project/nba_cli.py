@@ -79,6 +79,7 @@ def matches(
     num_matches = -1 if all else n
 
     players = nba_info.get_match(num_matches, team)
+    # arreglalo y usa el metodo send
     nba_output.print_matches_output_stream(players, output)
 
 

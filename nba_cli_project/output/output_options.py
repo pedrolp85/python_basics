@@ -4,23 +4,9 @@ from typing import Any, Dict, List
 from tabulate import tabulate
 
 
-class PrintOutput(metaclass=ABCMeta):
-    @abstractmethod
-    def print_players_output_stream(
-        self, players: List[dict], output: str, order_by: str
-    ):
-        pass
-
-    @abstractmethod
-    def print_matches_output_stream(
-        self, players: List[dict], output: str, order_by: str
-    ):
-        pass
-
-
 class Output(metaclass=ABCMeta):
     @abstractmethod
-    def send(self, data: List[Dict[str, Any]], keys: List[List[str]]) -> None:
+    def send(self, data: List[Dict[str, Any]], selected_keys: List[List[str]]) -> None:
         pass
 
 
