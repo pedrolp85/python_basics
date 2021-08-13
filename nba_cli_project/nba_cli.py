@@ -2,7 +2,7 @@ import typer
 
 from nba.constants import VERSION, Conference, PlayerOrder
 from nba.nba_info import get_nba_info
-from output.output_options import output_options
+from output.defaults import get_output
 
 # Estándar para imports: (separados por linea en blanco)
 # Libreria estándar arriba
@@ -32,7 +32,7 @@ def players(
 
     print(f"\nbacli version {VERSION}\n")
     nba_info = get_nba_info()
-    nba_output = output_options()
+    nba_output = get_output("yamlfile")
 
     num_players = -1 if all else n
 
@@ -57,7 +57,7 @@ def teams(conference: Conference = typer.Option(Conference.ALL)):
     print(f"nbacli version {VERSION}")
 
     nba_info = get_nba_info()
-    nba_output = output_options()
+    nba_output = get_output()
     teams = nba_info.get_teams(conference.value)
 
     print(f"Thes are the first {len(teams)} teams on the League")
@@ -74,7 +74,7 @@ def matches(
     print(f"nbacli version {VERSION}")
 
     nba_info = get_nba_info()
-    nba_output = output_options()
+    nba_output = get_output()
 
     num_matches = -1 if all else n
 
